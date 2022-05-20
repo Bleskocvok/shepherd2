@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+
+
+import sqlite3
+
+
+TABLE_SCHEMAS = """
+    CREATE TABLE IF NOT EXISTS exercise_type
+    (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name            varchar(200),
+        unit            varchar(10),
+
+        UNIQUE(name, unit)
+    );
+
+    CREATE TABLE IF NOT EXISTS record
+    (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        user            INTEGER NOT NULL,
+        server          INTEGER NOT NULL,
+        exercise_id     INTEGER NOT NULL,
+        value           decimal(5, 2),
+        time            timestamp,
+
+        CONSTRAINT one
+            FOREIGN KEY (exercise_id)
+            REFERENCES exercise_type(id)
+    );
+"""
+
+
+DEFAULT_TYPES = """
+    INSERT OR IGNORE INTO
+        exercise_type(name, unit)
+    VALUES
+        ('pushup', 'times'),
+        ('pullup', 'times'),
+        ('plank',  'sec'),
+        ('run',    'km'),
+        ('walk',   'km');
+"""
+
+
+class Database:
+
+
+    def __init__(self, filename: str):
+        self.con = sqlite3.connect(filename)
+        self.cur = self.con.cursor()
+
+        self.cur.executescript(TABLE_SCHEMAS)
+        self.cur.executescript(DEFAULT_TYPES)
+
+
+    def close(self):
+        self.con.close()
+
+
+    def add_record(self,
+            type: str,
+            value: int,
+            user: int,
+            server: int) -> None:
+
+        mapping = {
+            'usr' : user,
+            'ser' : server,
+            'typ' : type,
+            'val' : value
+        }
+
+        self.con.execute('''
+            INSERT INTO
+                record(user, server, exercise_id, value, time)
+            VALUES
+                (:usr,
+                 :ser,
+                 (SELECT id
+                    FROM exercise_type
+                    WHERE name = :typ
+                    LIMIT 1),
+                 :val,
+                 datetime('now', 'localtime'))
+        ''', mapping)
+
+        self.con.commit()
+
+
+    def get_last(self,
+            count: int,
+            user: int,
+            server: int) -> sqlite3.Cursor:
+
+        mapping = {
+            'usr' : user,
+            'srv' : server,
+            'cnt' : count
+        }
+
+        r = self.con.execute('''
+            SELECT
+                exercise_type.name,
+                value,
+                exercise_type.unit,
+                time(time) || ' ' || date(time)
+            FROM
+                record INNER JOIN exercise_type
+                       ON record.exercise_id = exercise_type.id
+            WHERE
+                record.user = :usr
+                AND record.server = :srv
+            ORDER BY
+                time DESC
+            LIMIT
+                :cnt
+        ''', mapping)
+
+        return r
+
+
+    def get_interval(self,
+            days: int,
+            user: int,
+            server: int) -> sqlite3.Cursor:
+
+        mapping = {
+            'usr' : user,
+            'srv' : server
+        }
+
+        r = self.con.execute(f'''
+            SELECT
+                exercise_type.name,
+                value,
+                exercise_type.unit,
+                time(time) || ' ' || date(time)
+            FROM
+                record INNER JOIN exercise_type
+                       ON record.exercise_id = exercise_type.id
+            WHERE
+                record.user = :usr
+                AND record.server = :srv
+                AND date(time) > date('now', '-{days} day')     -- no sql injection here
+                                                                -- ‹days› is ‹int›
+            ORDER BY
+                time DESC
+            LIMIT 50
+        ''', mapping)
+
+        return r
+
+
+    def get_exercise_types(self) -> sqlite3.Cursor:
+        r = self.con.execute('''
+            SELECT
+                name,
+                unit
+            FROM
+                exercise_type
+            ORDER BY
+                name DESC
+        ''')
+
+        return r
+
+
+# def main():
+
+#     db = Database('data.db')
+
+#     db.add_record('pushup', 1, 123, 456)
+#     # import time
+#     # time.sleep(3)
+#     db.add_record('walk', 2, 123, 456)
+
+#     rs = db.get_last(10, 123, 456)
+#     for row in rs:
+#         print(row)
+
+#     db.close()
+
+#     import table
+#     r = table.create_table(['alfa', 'beta', 'gamma'],
+#                            [('aaaaaaaaaa', 123456, 1),
+#                             ('b', 123, 0)])
+#     print(r)
+
+
+# if __name__ == '__main__':
+#     pass
+#     main()
+

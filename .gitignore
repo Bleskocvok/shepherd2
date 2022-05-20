@@ -1,0 +1,13 @@
+
+
+
+# data and secrets
+/.env
+/data.db
+
+# Python garbage
+/__pycache__
+/.mypy_cache
+
+# testing garbage
+/tmp.md
