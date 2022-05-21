@@ -3,13 +3,34 @@
 from discord.ext import commands
 import discord
 
-from typing import Optional, List
+from typing import Optional, List, Any
 import asyncio
 
 # my imports
 from database import Database
 from table import create_table
 import utils
+
+
+EMBED_COLOR = 0x99F7A7
+
+
+def embed(text: str, title: Optional[str] = None) -> discord.Embed:
+    res = discord.Embed(color=EMBED_COLOR)
+    res.add_field(name=title, value=text, inline=False)
+    return res
+
+
+def embed_table(rows: Any,
+                header: List[str],
+                title: Optional[str] = None) -> discord.Embed:
+
+    data = rows.fetchall()
+    tab = create_table(header, data, line = ('`', '`'),
+                                     head = ('**`', '`**'))
+    res = discord.Embed(color=EMBED_COLOR)
+    res.add_field(name=title, value=tab, inline=False)
+    return res
 
 
 class ShepherdCog(commands.Cog):
@@ -46,27 +67,29 @@ class ShepherdCog(commands.Cog):
 
     @commands.command(help='List recorded exercises for given time period')
     async def list(self, ctx, interval: str = 'day'):
+
         days = utils.str_to_days(interval)
-        rows = self.db.get_interval(days, ctx.author.id, ctx.guild.id)  \
-                      .fetchall()
-        table = create_table(['exercise', 'amount', 'unit', 'timestamp'], rows)
-        await ctx.send(f'```{table}```')
+        rows = self.db.get_interval(days, ctx.author.id, ctx.guild.id)
+        e = embed_table(rows, ['exercise', 'amount', 'unit', 'timestamp'],
+                        'Recorded activity')
+        await ctx.send(embed=e)
 
 
     @commands.command(help='List last N recorded exercises')
     async def last(self, ctx, n: int = 10):
-        rows = self.db.get_last(n, ctx.author.id, ctx.guild.id)  \
-                      .fetchall()
-        table = create_table(['exercise', 'amount', 'unit', 'timestamp'], rows)
-        await ctx.send(f'```{table}```')
+
+        rows = self.db.get_last(n, ctx.author.id, ctx.guild.id)
+        e = embed_table(rows, ['exercise', 'amount', 'unit', 'timestamp'],
+                        'Recorded activity')
+        await ctx.send(embed=e)
 
 
     @commands.command(help='List exercise types')
     async def exercises(self, ctx):
 
-        rows = self.db.get_exercise_types().fetchall()
-        table = create_table(['type', 'unit'], rows)
-        await ctx.send(f'```{table}```')
+        rows = self.db.get_exercise_types()
+        e = embed_table(rows, ['type', 'unit'], 'Exercises')
+        await ctx.send(embed=e)
 
 
     @commands.command(help='Stores the amount of exercise you did')

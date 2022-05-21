@@ -1,8 +1,11 @@
 
-from typing import List, Any
+from typing import List, Any, Optional, Tuple
 
 
-def create_table(header: List[str], data: List[tuple]) -> str:
+def create_table(header: List[str],
+                 data:   List[tuple],
+                 line:   Tuple[str, str] = ('', ''),
+                 head:   Tuple[str, str] = ('', '')) -> str:
 
     sizes: List[int] = [len(h) for h in header]
 
@@ -18,23 +21,27 @@ def create_table(header: List[str], data: List[tuple]) -> str:
     hdelim: str = '═╪═'
     hline:  str = '═'
 
-    res: str = ''
+    beg = line[0]
+    end = line[1]
+
+    res: str = head[0]
 
     for i, heading in enumerate(header):
         if i != 0:
             res += delim
         res += heading.upper().ljust(sizes[i])
 
-    res += '\n'
+    res += head[1] + '\n'
 
+    res += beg
     for i, size in enumerate(sizes):
         if i != 0:
             res += hdelim
         res += hline * size
-
-    res += '\n'
+    res += end + '\n'
 
     for row in data:
+        res += beg
         for i, val in enumerate(row):
             if i != 0:
                 res += delim
@@ -42,7 +49,7 @@ def create_table(header: List[str], data: List[tuple]) -> str:
                 res += str(val).rjust(sizes[i])
             else:
                 res += str(val).ljust(sizes[i])
-        res += '\n'
+        res += end + '\n'
 
     return res
 
