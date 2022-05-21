@@ -84,6 +84,16 @@ class ShepherdCog(commands.Cog):
         await ctx.send(embed=e)
 
 
+    @commands.command(help='List total stats for given time period')
+    async def stats(self, ctx, interval: str = 'day'):
+
+        days = utils.str_to_days(interval)
+        rows = self.db.get_total(days, ctx.author.id, ctx.guild.id)
+        e = embed_table(rows, ['exercise', 'total', 'unit'],
+                        'Total stats')
+        await ctx.send(embed=e)
+
+
     @commands.command(help='List exercise types')
     async def exercises(self, ctx):
 

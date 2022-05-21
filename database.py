@@ -29,16 +29,17 @@ TABLE_SCHEMAS = """
     );
 
     CREATE TEMP VIEW IF NOT EXISTS
-        record_exercise(id, user, server, ex_name, unit, value, time)
+        record_exercise(ex_id, user, server, ex_name, unit, value, time, date)
     AS
         SELECT
-            record.id,
+            exercise_type.id,
             user,
             server,
             exercise_type.name,
             exercise_type.unit,
             value,
-            time
+            time(time),
+            date(time)
         FROM
             record INNER JOIN exercise_type
                     ON record.exercise_id = exercise_type.id
@@ -120,7 +121,7 @@ class Database:
                 ex_name,
                 value,
                 unit,
-                time(time) || ' ' || date(time)
+                time || ' ' || date
             FROM
                 record_exercise
             WHERE
@@ -148,14 +149,44 @@ class Database:
                 ex_name,
                 value,
                 unit,
-                time(time) || ' ' || date(time)
+                time || ' ' || date
             FROM
                 record_exercise
             WHERE
                 user = :usr
                 AND server = :srv
-                AND date(time) > date('now', '-{days} day')     -- no sql injection here
-                                                                -- ‹days› is ‹int›
+                AND date > date('now', '-{days} day')   -- no sql injection here
+                                                        -- ‹days› is ‹int›
+            LIMIT 50
+        ''', mapping)
+
+        return r
+
+
+    def get_total(self,
+            days: int,
+            user: int,
+            server: int) -> sqlite3.Cursor:
+
+        mapping = {
+            'usr' : user,
+            'srv' : server
+        }
+
+        r = self.con.execute(f'''
+            SELECT
+                ex_name,
+                SUM(value),
+                unit
+            FROM
+                record_exercise
+            WHERE
+                user = :usr
+                AND server = :srv
+                AND date > date('now', '-{days} day')   -- no sql injection here
+                                                        -- ‹days› is ‹int›
+            GROUP BY
+                ex_id
             LIMIT 50
         ''', mapping)
 
