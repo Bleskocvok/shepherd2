@@ -71,7 +71,7 @@ class ShepherdCog(commands.Cog):
         days = utils.str_to_days(interval)
         rows = self.db.get_interval(days, ctx.author.id, ctx.guild.id)
         e = embed_table(rows, ['exercise', 'amount', 'unit', 'timestamp'],
-                        'Recorded activity')
+                        f'Recorded activity – {interval}')
         await ctx.send(embed=e)
 
 
@@ -90,7 +90,7 @@ class ShepherdCog(commands.Cog):
         days = utils.str_to_days(interval)
         rows = self.db.get_total(days, ctx.author.id, ctx.guild.id)
         e = embed_table(rows, ['exercise', 'total', 'unit'],
-                        'Total stats')
+                        f'Total stats – {interval}')
         await ctx.send(embed=e)
 
 
