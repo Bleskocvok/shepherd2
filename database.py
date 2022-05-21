@@ -27,6 +27,23 @@ TABLE_SCHEMAS = """
             FOREIGN KEY (exercise_id)
             REFERENCES exercise_type(id)
     );
+
+    CREATE TEMP VIEW IF NOT EXISTS
+        record_exercise(id, user, server, ex_name, unit, value, time)
+    AS
+        SELECT
+            record.id,
+            user,
+            server,
+            exercise_type.name,
+            exercise_type.unit,
+            value,
+            time
+        FROM
+            record INNER JOIN exercise_type
+                    ON record.exercise_id = exercise_type.id
+        ORDER BY
+            time DESC;
 """
 
 
@@ -100,18 +117,15 @@ class Database:
 
         r = self.con.execute('''
             SELECT
-                exercise_type.name,
+                ex_name,
                 value,
-                exercise_type.unit,
+                unit,
                 time(time) || ' ' || date(time)
             FROM
-                record INNER JOIN exercise_type
-                       ON record.exercise_id = exercise_type.id
+                record_exercise
             WHERE
-                record.user = :usr
-                AND record.server = :srv
-            ORDER BY
-                time DESC
+                user = :usr
+                AND server = :srv
             LIMIT
                 :cnt
         ''', mapping)
@@ -131,20 +145,17 @@ class Database:
 
         r = self.con.execute(f'''
             SELECT
-                exercise_type.name,
+                ex_name,
                 value,
-                exercise_type.unit,
+                unit,
                 time(time) || ' ' || date(time)
             FROM
-                record INNER JOIN exercise_type
-                       ON record.exercise_id = exercise_type.id
+                record_exercise
             WHERE
-                record.user = :usr
-                AND record.server = :srv
+                user = :usr
+                AND server = :srv
                 AND date(time) > date('now', '-{days} day')     -- no sql injection here
                                                                 -- ‹days› is ‹int›
-            ORDER BY
-                time DESC
             LIMIT 50
         ''', mapping)
 
