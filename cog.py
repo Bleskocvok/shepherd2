@@ -45,7 +45,7 @@ class ShepherdCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        print('ERROR:', error)
+        print('ERROR:', error, flush=True)
 
 
     @commands.Cog.listener()
