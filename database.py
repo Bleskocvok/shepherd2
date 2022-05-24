@@ -29,7 +29,7 @@ TABLE_SCHEMAS = """
     );
 
     CREATE TEMP VIEW IF NOT EXISTS
-        record_exercise(ex_id, user, server, ex_name, unit, value, time, date)
+        record_exercise(ex_id, user, server, ex_name, unit, value, time)
     AS
         SELECT
             exercise_type.id,
@@ -38,8 +38,7 @@ TABLE_SCHEMAS = """
             exercise_type.name,
             exercise_type.unit,
             value,
-            time(time),
-            date(time)
+            time
         FROM
             record INNER JOIN exercise_type
                     ON record.exercise_id = exercise_type.id
@@ -121,7 +120,7 @@ class Database:
                 ex_name,
                 value,
                 unit,
-                time || ' ' || date
+                time(time) || ' ' || date(time)
             FROM
                 record_exercise
             WHERE
@@ -149,14 +148,14 @@ class Database:
                 ex_name,
                 value,
                 unit,
-                time || ' ' || date
+                time(time) || ' ' || date(time)
             FROM
                 record_exercise
             WHERE
                 user = :usr
                 AND server = :srv
-                AND date > date('now', '-{days} day')   -- no sql injection here
-                                                        -- ‹days› is ‹int›
+                AND date(time) > date('now', '-{days} day') -- no sql injection here
+                                                            -- ‹days› is ‹int›
             LIMIT 50
         ''', mapping)
 
@@ -183,10 +182,54 @@ class Database:
             WHERE
                 user = :usr
                 AND server = :srv
-                AND date > date('now', '-{days} day')   -- no sql injection here
-                                                        -- ‹days› is ‹int›
+                AND date(time) > date('now', '-{days} day') -- no sql injection here
+                                                            -- ‹days› is ‹int›
             GROUP BY
                 ex_id
+            LIMIT 50
+        ''', mapping)
+
+        return r
+
+
+    def get_total_by_days(self,
+            days: int,
+            user: int,
+            server: int) -> sqlite3.Cursor:
+
+        mapping = {
+            'usr' : user,
+            'srv' : server
+        }
+
+        r = self.con.execute(f'''
+            SELECT
+                CASE strftime('%w', time)
+                    WHEN '0' THEN 'Sun'
+                    WHEN '1' THEN 'Mon'
+                    WHEN '2' THEN 'Tue'
+                    WHEN '3' THEN 'Wed'
+                    WHEN '4' THEN 'Thu'
+                    WHEN '5' THEN 'Fri'
+                    WHEN '6' THEN 'Sat'
+                    ELSE 'NaN'
+                END,
+                ex_name,
+                SUM(value),
+                unit,
+                time
+            FROM
+                record_exercise
+            WHERE
+                user = :usr
+                AND server = :srv
+                AND date(time) > date('now', '-{days} day') -- no sql injection here
+                                                            -- ‹days› is ‹int›
+            GROUP BY
+                date(time),
+                ex_id
+            ORDER BY
+                date(time) DESC
             LIMIT 50
         ''', mapping)
 

@@ -99,8 +99,24 @@ class ShepherdCog(commands.Cog):
         await ctx.send(embed=e)
 
 
-    @commands.command(help='List total stats for given time period')
+    @commands.command(help='List stats for given time period')
     async def stats(self,
+                    ctx,
+                    interval: str = 'day',
+                    user: discord.User = None):
+
+        user = ctx.author if user is None else user
+        days = utils.str_to_days(interval)
+        rows = self.db.get_total_by_days(days, user.id, ctx.guild.id)
+        e = embed_table(rows,
+                        ['day', 'exercise', 'total', 'unit', 'tmp'],
+                        f'Total stats – {interval}',
+                        f'Data for {user.name}')
+        await ctx.send(embed=e)
+
+
+    @commands.command(help='List total amount of recorded exercises for given time period')
+    async def total(self,
                     ctx,
                     interval: str = 'day',
                     user: discord.User = None):
@@ -109,8 +125,8 @@ class ShepherdCog(commands.Cog):
         days = utils.str_to_days(interval)
         rows = self.db.get_total(days, user.id, ctx.guild.id)
         e = embed_table(rows,
-                        ['exercise', 'total', 'unit'],
-                        f'Total stats – {interval}',
+                        ['exercise', 'total', 'unit', 'day'],
+                        f'Total – last {interval} days',
                         f'Data for {user.name}')
         await ctx.send(embed=e)
 
