@@ -23,13 +23,16 @@ def embed(text: str, title: Optional[str] = None) -> discord.Embed:
 
 def embed_table(rows: Any,
                 header: List[str],
-                title: Optional[str] = None) -> discord.Embed:
+                title: Optional[str] = None,
+                info:  Optional[str] = None) -> discord.Embed:
 
     data = rows.fetchall()
     tab = create_table(header, data, line = ('`', '`'),
                                      head = ('**`', '`**'))
     res = discord.Embed(color=EMBED_COLOR)
     res.add_field(name=title, value=tab, inline=False)
+    if info is not None:
+        res.set_footer(text=info)
     return res
 
 
@@ -66,31 +69,49 @@ class ShepherdCog(commands.Cog):
 
 
     @commands.command(help='List recorded exercises for given time period')
-    async def list(self, ctx, interval: str = 'day'):
+    async def list(self,
+                   ctx,
+                   interval: str = 'day',
+                   user: discord.User = None):
 
+        user = ctx.author if user is None else user
         days = utils.str_to_days(interval)
-        rows = self.db.get_interval(days, ctx.author.id, ctx.guild.id)
-        e = embed_table(rows, ['exercise', 'amount', 'unit', 'timestamp'],
-                        f'Recorded activity – {interval}')
+        rows = self.db.get_interval(days, user.id, ctx.guild.id)
+        e = embed_table(rows,
+                        ['exercise', 'amount', 'unit', 'timestamp'],
+                        f'Recorded activity – {interval}',
+                        f'Data for {user.name}')
         await ctx.send(embed=e)
 
 
     @commands.command(help='List last N recorded exercises')
-    async def last(self, ctx, n: int = 10):
+    async def last(self,
+                   ctx,
+                   n: int = 10,
+                   user: discord.User = None):
 
-        rows = self.db.get_last(n, ctx.author.id, ctx.guild.id)
-        e = embed_table(rows, ['exercise', 'amount', 'unit', 'timestamp'],
-                        'Recorded activity')
+        user = ctx.author if user is None else user
+        rows = self.db.get_last(n, user.id, ctx.guild.id)
+        e = embed_table(rows,
+                        ['exercise', 'amount', 'unit', 'timestamp'],
+                        f'Recorded activity – last {n}',
+                        f'Data for {user.name}')
         await ctx.send(embed=e)
 
 
     @commands.command(help='List total stats for given time period')
-    async def stats(self, ctx, interval: str = 'day'):
+    async def stats(self,
+                    ctx,
+                    interval: str = 'day',
+                    user: discord.User = None):
 
+        user = ctx.author if user is None else user
         days = utils.str_to_days(interval)
-        rows = self.db.get_total(days, ctx.author.id, ctx.guild.id)
-        e = embed_table(rows, ['exercise', 'total', 'unit'],
-                        f'Total stats – {interval}')
+        rows = self.db.get_total(days, user.id, ctx.guild.id)
+        e = embed_table(rows,
+                        ['exercise', 'total', 'unit'],
+                        f'Total stats – {interval}',
+                        f'Data for {user.name}')
         await ctx.send(embed=e)
 
 
