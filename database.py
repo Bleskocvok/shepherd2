@@ -216,8 +216,7 @@ class Database:
                 END,
                 ex_name,
                 SUM(value),
-                unit,
-                time
+                unit
             FROM
                 record_exercise
             WHERE
