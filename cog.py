@@ -125,7 +125,7 @@ class ShepherdCog(commands.Cog):
         days = utils.str_to_days(interval)
         rows = self.db.get_total(days, user.id, ctx.guild.id)
         e = embed_table(rows,
-                        ['exercise', 'total', 'unit', 'day'],
+                        ['exercise', 'total', 'unit'],
                         f'Total – last {interval} days',
                         f'Data for {user.name}')
         await ctx.send(embed=e)
