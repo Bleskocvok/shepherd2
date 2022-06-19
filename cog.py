@@ -149,6 +149,8 @@ class ShepherdCog(commands.Cog):
         days = utils.str_to_days(interval)
         rows = self.db.get_exercise_by_days(exercise, days, user.id, ctx.guild.id)
         values = [v for (_, v, _, _) in rows]
+        # so that thet are in the proper order: oldest --> newest
+        values.reverse()
         inpt = f"""
             {{
                 "name": "{exercise}",
