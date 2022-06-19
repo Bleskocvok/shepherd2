@@ -1,10 +1,15 @@
 
 
+from ast import Bytes
+from time import sleep
 from discord.ext import commands
 import discord
+import cairosvg
 
-from typing import Optional, List, Any
-import asyncio
+from typing import ByteString, Optional, List, Any
+from subprocess import Popen, PIPE
+import tempfile
+import io
 
 # my imports
 from database import Database
@@ -12,7 +17,8 @@ from table import create_table
 import utils
 
 
-EMBED_COLOR = 0x99F7A7
+# EMBED_COLOR = 0x99F7A7    # lighter green
+EMBED_COLOR = 0x38a660
 
 
 def embed(text: str, title: Optional[str] = None) -> discord.Embed:
@@ -113,6 +119,48 @@ class ShepherdCog(commands.Cog):
                         f'Total stats – {interval}',
                         f'Data for {user.name}')
         await ctx.send(embed=e)
+
+
+    @commands.command(help='...')
+    async def exercise(self,
+                    ctx,
+                    exercise: str,
+                    interval: str = 'day',
+                    user: discord.User = None):
+
+        user = ctx.author if user is None else user
+        days = utils.str_to_days(interval)
+        rows = self.db.get_exercise_by_days(exercise, days, user.id, ctx.guild.id)
+        e = embed_table(rows,
+                        ['day', 'total', 'unit', 'date'],
+                        f'Exercise {exercise} – last {days} days',
+                        f'Data for {user.name}')
+        await ctx.send(embed=e)
+
+
+    @commands.command(help='...')
+    async def graph(self,
+                    ctx,
+                    exercise: str,
+                    interval: str = 'day',
+                    user: discord.User = None):
+
+        user = ctx.author if user is None else user
+        days = utils.str_to_days(interval)
+        rows = self.db.get_exercise_by_days(exercise, days, user.id, ctx.guild.id)
+        values = [v for (_, v, _, _) in rows]
+        inpt = f"""
+            {{
+                "name": "{exercise}",
+                "values": {str(values)}
+            }}
+        """
+        GRAPH = "./graph.hs"
+        with Popen([GRAPH], stdout=PIPE, stdin=PIPE, stderr=PIPE) as proc:
+            out, err = proc.communicate(input=bytes(inpt, 'utf-8'))
+            svg = cairosvg.svg2png(bytestring=out)
+            bs = io.BytesIO(svg)    
+            await ctx.send(file=discord.File(filename="graph.png", fp=bs))
 
 
     @commands.command(help='List total amount of recorded exercises for given time period')

@@ -192,6 +192,67 @@ class Database:
         return r
 
 
+    def get_exercise_by_days(self,
+            exercise: str,
+            days: int,
+            user: int,
+            server: int) -> sqlite3.Cursor:
+
+        mapping = {
+            'exe' : exercise,
+            'usr' : user,
+            'srv' : server
+        }
+
+        r = self.con.execute(f'''
+            WITH RECURSIVE
+                numbers(n) AS
+                (
+                    SELECT 0
+                    UNION ALL
+                    SELECT n + 1
+                        FROM numbers
+                    LIMIT {days}
+                ),
+                days(day) AS
+                (
+                    SELECT date('now', '-' || n || ' day')
+                    FROM numbers
+                ),
+                records(ex_id, user, server, ex_name, unit, value, time) AS
+                (
+                    SELECT *
+                    FROM record_exercise
+                    WHERE user = :usr
+                        AND server = :srv
+                        AND ex_name = :exe
+                )
+            SELECT
+                CASE strftime('%w', day)
+                    WHEN '0' THEN 'Sun'
+                    WHEN '1' THEN 'Mon'
+                    WHEN '2' THEN 'Tue'
+                    WHEN '3' THEN 'Wed'
+                    WHEN '4' THEN 'Thu'
+                    WHEN '5' THEN 'Fri'
+                    WHEN '6' THEN 'Sat'
+                    ELSE 'NaN'
+                END,
+                IFNULL(SUM(value), 0),
+                (SELECT unit FROM records LIMIT 1),
+                strftime('%d/%m', day)
+            FROM
+                days LEFT JOIN records
+                            ON date(records.time) = day
+            GROUP BY
+                day
+            ORDER BY
+                day DESC
+        ''', mapping)
+
+        return r
+
+
     def get_total_by_days(self,
             days: int,
             user: int,
