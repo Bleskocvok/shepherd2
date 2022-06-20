@@ -253,6 +253,13 @@ class Database:
         return r
 
 
+    def get_date_ago(self, days: int):
+
+        return self.con.execute(f'''
+            SELECT date('now', '-' || {days} || ' day')
+        ''')
+
+
     def get_total_by_days(self,
             days: int,
             user: int,

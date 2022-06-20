@@ -48,6 +48,7 @@ main = do
 
 data Params = Params { values :: [Int]
                      , name :: String
+                     , desc :: Maybe String
                      }
     deriving (Generic, Show)
 
@@ -59,7 +60,9 @@ instance FromJSON Params
 
 
 renderSvg :: Params -> String
-renderSvg params = show $ svg $ visualize (values params) <> addText (name params)
+renderSvg params = show $ svg $ visualize (values params)
+                                <> addText (name params)
+                                <> addDesc (maybe "" id (desc params))
 
 
 pckShow :: Show a => a -> T.Text
@@ -76,13 +79,30 @@ fgColor = "#38a660"
 txtColor = "#121212"
 
 
+colTopPad, colBotPad, colMinH, colMaxH :: (Num a, Show a) => a
+colTopPad = 10
+colBotPad = 10
+colMinH   = 5
+colMaxH   = 100 - colTopPad - colBotPad - colMinH
+
+colWCoeff :: Fractional a => a
+colWCoeff = 0.75
+
+colTxtShift, colTxtSize :: (Num a, Show a) => a
+colTxtPosCoeff :: Fractional a => a
+colTxtShift = 0
+colTxtSize  = 8
+colTxtPosCoeff = 0.875
+
+
 getPercent :: (Fractional b, Integral a) => a -> a -> b
 getPercent n max = (fromIntegral n) * 100 / fromIntegral max
 
 
 getShift :: Fractional a => a -> a
--- getShift prt = 100 - (prt / 2)
-getShift prt = 10 + 85 - 0.85 * (prt / 2)
+getShift prt = fromIntegral (colTopPad + colMaxH)
+               - fromIntegral colMaxH / 100 * (prt / 2)
+-- getShift prt = 10 + 85 - 0.85 * (prt / 2)
 
 
 percent :: T.Text -> T.Text
@@ -92,12 +112,23 @@ percent = (`T.append` T.pack "%")
 addText :: String -> Element
 addText txt = text_
             [ X_ <<- "5%"
-            , Y_ <<- "10%"
+            , Y_ <<- "13%"
             , Font_size_ <<- "20"
             , Text_anchor_ <<- "left"
-            , Fill_opacity_ <<- "0.5"
+            -- , Fill_opacity_ <<- "0.5"
             , Fill_ <<- txtColor
             ] (toElement $ T.pack txt)
+
+
+addDesc :: String -> Element
+addDesc txt = text_
+            [ X_ <<- "5%"
+            , Y_ <<- "25%"
+            , Font_size_ <<- "10"
+            , Text_anchor_ <<- "left"
+            , Fill_ <<- txtColor
+            ] (toElement $ T.pack txt)
+
 
 
 columns :: (Integral a, Show a) => [a] -> Element
@@ -109,9 +140,10 @@ columns vals = foldr column mempty [0 .. len - 1]
         len = length vals
         colW = float (fst graphSize + 1) / float (len + 1)
         column i = (<> text_
-                    [ X_            <<- (pckShow $ colW * 0.875 + colW * float i)
-                    , Y_            <<- (percent $ pckShow $ getShift prt - 4)
-                    , Font_size_    <<- "10"
+                    [ X_            <<- (pckShow $ colW * colTxtPosCoeff + colW * float i)
+                    -- , Y_            <<- (percent $ pckShow $ getShift prt - colTxtShift)
+                    , Y_            <<- (percent $ pckShow $ 100 - colBotPad + colTxtSize * 0.5)
+                    , Font_size_    <<- pckShow colTxtSize
                     , Text_anchor_  <<- "middle"
                     , Fill_opacity_ <<- "0.75"
                     , Fill_         <<- txtColor
@@ -120,8 +152,8 @@ columns vals = foldr column mempty [0 .. len - 1]
                     (<> rect_
                     [ Y_      <<- (percent $ pckShow $ getShift prt)
                     , X_      <<- (pckShow $ colW * 0.5 + colW * float i)
-                    , Width_  <<- pckShow (colW * 0.75)
-                    , Height_ <<- (pckShow $ 5 + prt * 0.85)
+                    , Width_  <<- (pckShow $ colW * colWCoeff)
+                    , Height_ <<- (pckShow $ colMinH + prt * colMaxH / 100)
                     , Fill_   <<- fgColor
                     ])
             where prt = getPercent value largest

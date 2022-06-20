@@ -142,7 +142,7 @@ class ShepherdCog(commands.Cog):
     async def graph(self,
                     ctx,
                     exercise: str,
-                    interval: str = 'day',
+                    interval: str = 'month',
                     user: discord.User = None):
 
         user = ctx.author if user is None else user
@@ -151,9 +151,13 @@ class ShepherdCog(commands.Cog):
         values = [v for (_, v, _, _) in rows]
         # so that thet are in the proper order: oldest --> newest
         values.reverse()
+
+        start_date, end_date = (self.db.get_date_ago(days).fetchone()[0],
+                                self.db.get_date_ago(   0).fetchone()[0])
         inpt = f"""
             {{
                 "name": "{exercise}",
+                "desc": "({start_date}) - ({end_date})",
                 "values": {str(values)}
             }}
         """
