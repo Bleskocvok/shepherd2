@@ -1,6 +1,6 @@
 #!/usr/bin/env runghc
 
-{-# LANGUAGE DeriveGeneric, OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric, OverloadedStrings, FlexibleContexts #-}
 
 
 module Main where
