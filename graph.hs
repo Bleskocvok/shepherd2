@@ -16,17 +16,14 @@ import Data.Text as T ( pack, Text, append )
 import Control.Monad.IO.Class ( liftIO )
 import Data.ByteString.Char8 as C8 ( pack )
 import Data.ByteString.Lazy.Char8 as LC8 ( pack )
--- import qualified Data.ByteString as BS
--- import qualified Data.ByteString.Lazy as BL
--- import qualified Data.ByteString.UTF8 as BSU
--- import qualified Data.ByteString.Lazy.UTF8 as BLS
 
 -- other libraries
 import Data.Aeson
-import Graphics.Svg
+import Graphics.Svg ( (<<-), with, doctype, rect_, svg11_, text_,
+                      AttrTag(Fill_, Font_size_, Text_anchor_, Fill_opacity_,
+                              Y_, X_, Version_, Width_, Height_),
+                      Element, ToElement(toElement) )
 
-
--- # Helper functions
 
 -- inefficient: maybe!
 trim :: String -> String
@@ -70,7 +67,7 @@ pckShow = T.pack . show
 
 
 graphSize :: (Int, Int)
-graphSize = (400, 200)
+graphSize = (800, 400)
 
 
 bgColor, fgColor, txtColor :: T.Text
