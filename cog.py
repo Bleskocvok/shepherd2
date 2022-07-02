@@ -162,10 +162,11 @@ class ShepherdCog(commands.Cog):
             }}
         """
         GRAPH = "./graph.hs"
+        SCALE = 2
         with Popen([GRAPH], stdout=PIPE, stdin=PIPE, stderr=PIPE) as proc:
             out, err = proc.communicate(input=bytes(inpt, 'utf-8'))
-            svg = cairosvg.svg2png(bytestring=out, scale=2)
-            bs = io.BytesIO(svg)    
+            svg = cairosvg.svg2png(bytestring=out, scale=SCALE)
+            bs = io.BytesIO(svg)
             await ctx.send(file=discord.File(filename="graph.png", fp=bs))
 
 
