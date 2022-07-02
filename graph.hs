@@ -39,7 +39,7 @@ main = do
     case params of
         Left err -> putStrLn $ "ERROR: json error\n" ++ err
         Right p -> do putStrLn $ renderSvg p
-                      hPutStrLn stderr "graph graphing"
+                    --   hPutStrLn stderr "graph graphing"
                       hPutStrLn stderr (renderSvg p)
 
 
@@ -67,7 +67,7 @@ pckShow = T.pack . show
 
 
 graphSize :: (Int, Int)
-graphSize = (800, 400)
+graphSize = (400, 200)
 
 
 bgColor, fgColor, txtColor :: T.Text
@@ -92,20 +92,6 @@ colTxtSize  = 8
 colTxtPosCoeff = 0.875
 
 
-getPercent :: (Fractional b, Integral a) => a -> a -> b
-getPercent n max = (fromIntegral n) * 100 / fromIntegral max
-
-
-getShift :: Fractional a => a -> a
-getShift prt = fromIntegral (colTopPad + colMaxH)
-               - fromIntegral colMaxH / 100 * (prt / 2)
--- getShift prt = 10 + 85 - 0.85 * (prt / 2)
-
-
-percent :: T.Text -> T.Text
-percent = (`T.append` T.pack "%")
-
-
 addText :: String -> Element
 addText txt = text_
             [ X_ <<- "5%"
@@ -126,6 +112,19 @@ addDesc txt = text_
             , Fill_ <<- txtColor
             ] (toElement $ T.pack txt)
 
+
+getPercent :: (Fractional b, Integral a) => a -> a -> b
+getPercent n max = (fromIntegral n) * 100 / fromIntegral max
+
+
+getShift :: Fractional a => a -> a
+getShift prt = fromIntegral (colTopPad + colMaxH)
+               - fromIntegral colMaxH / 100 * (prt / 2)
+-- getShift prt = 10 + 85 - 0.85 * (prt / 2)
+
+
+percent :: T.Text -> T.Text
+percent = (`T.append` T.pack "%")
 
 
 columns :: (Integral a, Show a) => [a] -> Element
