@@ -42,6 +42,19 @@ def embed_table(rows: Any,
     return res
 
 
+class Shephelp(commands.MinimalHelpCommand):
+
+    async def send_pages(self):
+
+        destination = self.get_destination()
+        embed = discord.Embed(color=EMBED_COLOR, description='')
+
+        for page in self.paginator.pages:
+            embed.description += page
+
+        await destination.send(embed=embed)
+
+
 class ShepherdCog(commands.Cog):
 
     def __init__(self, bot: commands.Bot, database: Database):
