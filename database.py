@@ -55,7 +55,8 @@ DEFAULT_TYPES = """
         ('pullup', 'times'),
         ('plank',  'sec'),
         ('run',    'km'),
-        ('walk',   'km');
+        ('walk',   'km'),
+        ('crunch', 'times');
 """
 
 
