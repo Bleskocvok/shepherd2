@@ -44,11 +44,10 @@ def embed_table(rows: Any,
 
 async def special_reaction(msg, amount: int):
     dictionary = {
-         69: [ "\N{REGIONAL INDICATOR N}", "\N{REGIONAL INDICATOR I}",
-               "\N{REGIONAL INDICATOR C}", "\N{REGIONAL INDICATOR E}" ],
-        100: [ "\N{HUNDRED POINTS}" ],
+         69: [ "🇳", "🇮", "🇨", "🇪" ],
+        100: [ "💯" ],
     }
-    
+
     react = dictionary.get(amount)
     if react is None:
         return
@@ -228,6 +227,6 @@ class ShepherdCog(commands.Cog):
 
         self.db.add_record(type, amount, ctx.author.id, ctx.guild.id)
         await ctx.message.add_reaction('\N{FLEXED BICEPS}')
-        special_reaction(ctx.message, amount)
+        await special_reaction(ctx.message, amount)
 
 
