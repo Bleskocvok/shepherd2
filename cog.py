@@ -42,6 +42,22 @@ def embed_table(rows: Any,
     return res
 
 
+async def special_reaction(msg, amount: int):
+    dictionary = {
+         69: [ "\N{REGIONAL INDICATOR N}", "\N{REGIONAL INDICATOR I}",
+               "\N{REGIONAL INDICATOR C}", "\N{REGIONAL INDICATOR E}" ],
+        100: [ "\N{HUNDRED POINTS}" ],
+    }
+    
+    react = dictionary.get(amount)
+    if react is None:
+        return
+    
+    for r in react:
+        await msg.add_reaction(r)
+
+
+
 class Shephelp(commands.MinimalHelpCommand):
 
     async def send_pages(self):
@@ -208,9 +224,10 @@ class ShepherdCog(commands.Cog):
 
 
     @commands.command(help='Stores the amount of exercise you did')
-    async def did(self, ctx, amount : int, type: str):
+    async def did(self, ctx, amount: int, type: str):
 
         self.db.add_record(type, amount, ctx.author.id, ctx.guild.id)
         await ctx.message.add_reaction('\N{FLEXED BICEPS}')
+        special_reaction(ctx.message, amount)
 
 
