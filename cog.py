@@ -42,13 +42,13 @@ def embed_table(rows: Any,
     return res
 
 
-async def special_reaction(msg, amount: int):
-    dictionary = {
-         69: [ "🇳", "🇮", "🇨", "🇪" ],
-        100: [ "💯" ],
-    }
+special_reaction_dict = {
+     69: [ "🇳", "🇮", "🇨", "🇪" ],
+    100: [ "💯" ],
+}
 
-    react = dictionary.get(amount)
+async def special_reaction(msg, amount: int):
+    react = special_reaction_dict.get(amount)
     if react is None:
         return
     
