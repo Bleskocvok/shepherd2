@@ -5,6 +5,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 import datetime
+import asyncio
 
 # my imports
 from database import Database
@@ -26,15 +27,15 @@ def main():
     # turn on intents to acess channel.members (important)
     intents = discord.Intents.default()
     intents.members = True
+    intents.message_content = True
 
     # start the client
     client = commands.Bot(command_prefix='!', intents=intents)
-    client.add_cog(ShepherdCog(client, db))
+    asyncio.run(client.add_cog(ShepherdCog(client, db)))
     client.help_command = Shephelp()
     client.run(token)
 
 
 if __name__ == "__main__":
     main()
-
 
