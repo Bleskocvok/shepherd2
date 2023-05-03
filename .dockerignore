@@ -1,0 +1,7 @@
+
+.env
+data.db
+
+# dumb caches
+__pycache__
+.mypy_cache
