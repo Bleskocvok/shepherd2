@@ -51,12 +51,14 @@ DEFAULT_TYPES = """
     INSERT OR IGNORE INTO
         exercise_type(name, unit)
     VALUES
-        ('pushup', 'times'),
-        ('pullup', 'times'),
-        ('plank',  'sec'),
-        ('run',    'km'),
-        ('walk',   'km'),
-        ('crunch', 'times');
+        ('pushup', 'times')
+        , ('pullup', 'times')
+        , ('plank',  'sec')
+        , ('run',    'km')
+        , ('walk',   'km')
+        , ('crunch', 'times')
+        , ('badminton', 'min')
+        ;
 """
 
 
