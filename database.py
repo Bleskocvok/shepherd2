@@ -48,17 +48,13 @@ TABLE_SCHEMAS = """
 
 
 DEFAULT_TYPES = """
-    INSERT OR IGNORE INTO
-        exercise_type(name, unit)
-    VALUES
-        ('pushup', 'times')
-        , ('pullup', 'times')
-        , ('plank',  'sec')
-        , ('run',    'km')
-        , ('walk',   'km')
-        , ('crunch', 'times')
-        , ('badminton', 'min')
-        ;
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('pushup', 'times');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('pullup', 'times');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('plank',  'sec');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('run',    'km');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('walk',   'km');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('crunch', 'times');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('badminton', 'min');
 """
 
 
