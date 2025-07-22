@@ -55,6 +55,7 @@ DEFAULT_TYPES = """
     INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('walk',   'km');
     INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('crunch', 'times');
     INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('badminton', 'min');
+    INSERT OR IGNORE INTO exercise_type(name, unit) VALUES ('squat',  'times');
 """
 
 
